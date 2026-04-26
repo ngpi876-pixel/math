@@ -1,213 +1,381 @@
-import React, { useState } from "react";
-import {
-  LucideUser,
-  LucideChevronRight,
-  LucidePieChart
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>數學能力評估</title>
 
-// --- 測驗題目 ---
-const quizData = [
-  {
-    id: 1,
-    question: "因式分解多項式：-24a³b² - 8ab",
-    options: [
-      "-8ab(3a²b + 1)",
-      "-8ab(3a²b - 1)",
-      "-8a²b(3ab + 1)",
-      "8ab(-3a²b + 1)"
-    ],
-    answer: 0
-  },
-  {
-    id: 2,
-    question: "若大廈 AB = h，且 ∠ADB = 40°，則 BD 的長度為？",
-    options: [
-      "h * tan 40°",
-      "h / tan 40°",
-      "h * sin 40°",
-      "h / cos 40°"
-    ],
-    answer: 1
-  },
-  {
-    id: 3,
-    question: "計算圖中大廈的高 h (CD = 15m, ∠ADB = 40°, ∠ACB = 35°)",
-    options: ["50.21 m", "45.67 m", "63.54 m", "35.82 m"],
-    answer: 2
-  }
-];
-
-export default function App() {
-  const [view, setView] = useState("student-entry");
-  const [studentName, setStudentName] = useState("");
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [score, setScore] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // --- Google 表單資訊 ---
-  const GOOGLE_FORM_URL =
-    "https://docs.google.com/forms/d/e/1FAIpQLSdF4d__IhZ1XqwJik78ikxT4Mm55eg_xR8W7piRuHLTniKakg/formResponse";
-
-  const ENTRY_NAME = "entry.118802991"; // 學生姓名
-  const ENTRY_SCORE = "entry.1507697808"; // 分數
-
-  const handleStartQuiz = () => {
-    if (!studentName.trim()) return;
-    setView("quiz");
-  };
-
-  const handleAnswer = (idx) => {
-    let newScore = score;
-
-    if (idx === quizData[currentIdx].answer) {
-      newScore += 1;
-      setScore(newScore);
+  <style>
+    * {
+      box-sizing: border-box;
     }
 
-    if (currentIdx < quizData.length - 1) {
-      setCurrentIdx(currentIdx + 1);
-    } else {
-      const finalScore = Math.round((newScore / quizData.length) * 100);
-      setView("result");
-      submitToGoogleForm(studentName.trim(), finalScore);
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      background: #f0ebf8;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
     }
-  };
 
-  const submitToGoogleForm = async (name, finalScore) => {
-    setIsSubmitting(true);
+    .card {
+      width: 100%;
+      max-width: 580px;
+      background: white;
+      border-top: 10px solid #673ab7;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
 
-    const formData = new FormData();
-    formData.append(ENTRY_NAME, name);
-    formData.append(ENTRY_SCORE, String(finalScore));
+    .content {
+      padding: 32px;
+    }
 
-    try {
-      await fetch(GOOGLE_FORM_URL, {
+    h1 {
+      font-size: 32px;
+      margin: 0 0 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #0f172a;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 0;
+    }
+
+    p {
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      outline: none;
+      margin: 16px 0;
+    }
+
+    input:focus {
+      border-color: #673ab7;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .primary {
+      background: #673ab7;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #5e35b1;
+    }
+
+    .primary:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 32px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .badge {
+      color: #673ab7;
+      background: #f3e8ff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: bold;
+    }
+
+    .question {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: grid;
+      gap: 16px;
+    }
+
+    .option {
+      background: white;
+      color: #1e293b;
+      border: 2px solid #e2e8f0;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .option:hover {
+      border-color: #673ab7;
+      background: #f3e8ff;
+    }
+
+    .letter {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: #673ab7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .result {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .icon {
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: #f3e8ff;
+      color: #673ab7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+    }
+
+    .score {
+      font-size: 64px;
+      font-weight: 900;
+      color: #673ab7;
+      margin: 24px 0 8px;
+    }
+
+    .score span {
+      font-size: 22px;
+      color: #94a3b8;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="content" id="app"></div>
+  </main>
+
+  <script>
+    const quizData = [
+      {
+        id: 1,
+        question: "因式分解多項式：-24a³b² - 8ab",
+        options: [
+          "-8ab(3a²b + 1)",
+          "-8ab(3a²b - 1)",
+          "-8a²b(3ab + 1)",
+          "8ab(-3a²b + 1)"
+        ],
+        answer: 0
+      },
+      {
+        id: 2,
+        question: "若大廈 AB = h，且 ∠ADB = 40°，則 BD 的長度為？",
+        options: [
+          "h * tan 40°",
+          "h / tan 40°",
+          "h * sin 40°",
+          "h / cos 40°"
+        ],
+        answer: 1
+      },
+      {
+        id: 3,
+        question: "計算圖中大廈的高 h (CD = 15m, ∠ADB = 40°, ∠ACB = 35°)",
+        options: ["50.21 m", "45.67 m", "63.54 m", "35.82 m"],
+        answer: 2
+      }
+    ];
+
+    const GOOGLE_FORM_URL =
+      "https://docs.google.com/forms/d/e/1FAIpQLSdF4d__IhZ1XqwJik78ikxT4Mm55eg_xR8W7piRuHLTniKakg/formResponse";
+
+    const ENTRY_NAME = "entry.118802991";
+    const ENTRY_SCORE = "entry.1507697808";
+
+    let view = "student-entry";
+    let studentName = "";
+    let currentIdx = 0;
+    let score = 0;
+    let isSubmitting = false;
+
+    const app = document.getElementById("app");
+
+    function submitToGoogleForm(name, finalScore) {
+      isSubmitting = true;
+      render();
+
+      const formData = new FormData();
+      formData.append(ENTRY_NAME, name);
+      formData.append(ENTRY_SCORE, String(finalScore));
+
+      fetch(GOOGLE_FORM_URL, {
         method: "POST",
         mode: "no-cors",
         body: formData
-      });
-
-      console.log("數據已發送至 Google Form");
-    } catch (error) {
-      console.error("發送失敗", error);
-    } finally {
-      setIsSubmitting(false);
+      })
+        .then(() => {
+          console.log("數據已發送至 Google Form");
+        })
+        .catch((error) => {
+          console.error("發送失敗", error);
+        })
+        .finally(() => {
+          isSubmitting = false;
+          render();
+        });
     }
-  };
 
-  const restartQuiz = () => {
-    setView("student-entry");
-    setStudentName("");
-    setCurrentIdx(0);
-    setScore(0);
-    setIsSubmitting(false);
-  };
+    function startQuiz() {
+      const input = document.getElementById("studentName");
+      studentName = input.value.trim();
 
-  return (
-    <div className="min-h-screen bg-[#f0ebf8] flex items-center justify-center p-4 font-sans text-slate-800">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden border-t-[10px] border-[#673ab7]">
-        <div className="p-8">
-          {view === "student-entry" && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-slate-900 border-b pb-4">
-                數學能力評估
-              </h1>
+      if (!studentName) return;
 
-              <p className="text-slate-600">
-                請輸入您的真實姓名以開始測驗。結果將自動同步至教師系統。
-              </p>
+      view = "quiz";
+      render();
+    }
 
-              <div className="relative">
-                <LucideUser
-                  className="absolute left-4 top-4 text-slate-400"
-                  size={20}
-                />
+    function answerQuestion(index) {
+      if (index === quizData[currentIdx].answer) {
+        score += 1;
+      }
 
-                <input
-                  type="text"
-                  placeholder="您的姓名"
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-slate-100 focus:border-[#673ab7] outline-none transition-all text-lg"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleStartQuiz();
-                  }}
-                />
-              </div>
+      if (currentIdx < quizData.length - 1) {
+        currentIdx += 1;
+        render();
+      } else {
+        const finalScore = Math.round((score / quizData.length) * 100);
+        view = "result";
+        render();
+        submitToGoogleForm(studentName, finalScore);
+      }
+    }
 
-              <button
-                onClick={handleStartQuiz}
-                disabled={!studentName.trim()}
-                className="w-full bg-[#673ab7] text-white font-bold py-4 rounded-xl hover:bg-[#5e35b1] transition-all flex justify-center items-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed"
-              >
-                開始作答 <LucideChevronRight size={20} />
-              </button>
-            </div>
-          )}
+    function restartQuiz() {
+      view = "student-entry";
+      studentName = "";
+      currentIdx = 0;
+      score = 0;
+      isSubmitting = false;
+      render();
+    }
 
-          {view === "quiz" && (
-            <div className="animate-in fade-in duration-500">
-              <div className="flex justify-between items-center mb-8">
-                <span className="text-sm font-bold text-[#673ab7] bg-purple-50 px-3 py-1 rounded-full">
-                  問題 {currentIdx + 1} / {quizData.length}
-                </span>
+    function renderEntry() {
+      app.innerHTML = `
+        <h1>數學能力評估</h1>
+        <p>請輸入您的真實姓名以開始測驗。結果將自動同步至教師系統。</p>
 
-                <span className="text-sm text-slate-400">
-                  考生：{studentName}
-                </span>
-              </div>
+        <input id="studentName" type="text" placeholder="您的姓名" />
 
-              <div className="text-2xl font-bold text-slate-800 mb-10 text-center">
-                {quizData[currentIdx].question}
-              </div>
+        <button class="primary" onclick="startQuiz()">
+          開始作答 ›
+        </button>
+      `;
 
-              <div className="grid gap-4">
-                {quizData[currentIdx].options.map((opt, i) => (
-                  <button
-                    key={opt}
-                    onClick={() => handleAnswer(i)}
-                    className="p-4 text-left border-2 border-slate-100 rounded-xl hover:border-[#673ab7] hover:bg-purple-50 transition-all flex items-center gap-4 group"
-                  >
-                    <span className="w-8 h-8 flex-none bg-slate-100 group-hover:bg-purple-200 rounded-full flex items-center justify-center font-bold text-purple-600">
-                      {String.fromCharCode(65 + i)}
-                    </span>
+      const input = document.getElementById("studentName");
+      input.focus();
+      input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") startQuiz();
+      });
+    }
 
-                    <span className="text-lg">{opt}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+    function renderQuiz() {
+      const item = quizData[currentIdx];
 
-          {view === "result" && (
-            <div className="text-center py-6 space-y-6">
-              <div className="w-20 h-20 bg-purple-100 text-[#673ab7] rounded-full flex items-center justify-center mx-auto">
-                <LucidePieChart size={40} />
-              </div>
-
-              <h2 className="text-2xl font-bold">提交成功！</h2>
-
-              <div className="text-6xl font-black text-[#673ab7]">
-                {Math.round((score / quizData.length) * 100)}
-                <span className="text-xl ml-1 text-slate-400">分</span>
-              </div>
-
-              <p className="text-slate-500">
-                {isSubmitting
-                  ? "數據同步中..."
-                  : "測驗已完成，系統已嘗試同步您的回應"}
-              </p>
-
-              <button
-                onClick={restartQuiz}
-                className="w-full bg-slate-100 text-slate-600 font-bold py-4 rounded-xl hover:bg-slate-200 transition-all"
-              >
-                返回首頁
-              </button>
-            </div>
-          )}
+      app.innerHTML = `
+        <div class="top-row">
+          <span class="badge">問題 ${currentIdx + 1} / ${quizData.length}</span>
+          <span>考生：${studentName}</span>
         </div>
-      </div>
-    </div>
-  );
-}
+
+        <div class="question">${item.question}</div>
+
+        <div class="options">
+          ${item.options.map((option, index) => `
+            <button class="option" onclick="answerQuestion(${index})">
+              <span class="letter">${String.fromCharCode(65 + index)}</span>
+              <span>${option}</span>
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderResult() {
+      const finalScore = Math.round((score / quizData.length) * 100);
+
+      app.innerHTML = `
+        <div class="result">
+          <div class="icon">◔</div>
+
+          <h2>提交成功！</h2>
+
+          <div class="score">
+            ${finalScore}<span>分</span>
+          </div>
+
+          <p>
+            ${isSubmitting ? "數據同步中..." : "測驗已完成，系統已嘗試同步您的回應"}
+          </p>
+
+          <button class="secondary" onclick="restartQuiz()">
+            返回首頁
+          </button>
+        </div>
+      `;
+    }
+
+    function render() {
+      if (view === "student-entry") renderEntry();
+      if (view === "quiz") renderQuiz();
+      if (view === "result") renderResult();
+    }
+
+    render();
+  </script>
+</body>
+</html>
